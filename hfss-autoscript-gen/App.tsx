@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { generateHfssScript, ScriptConfig } from './utils/scriptBuilder';
 import { ConfigForm } from './components/ConfigForm';
@@ -34,6 +35,9 @@ const App: React.FC = () => {
     filenamePrefix: 'Dipole',
     includeVarInName: true,
     numPorts: 2,
+    debugMode: true,
+    simulateIndividually: false,
+    smartExport: true, // Default to Smart Export (Precise Mode)
   });
 
   const [code, setCode] = useState('');
@@ -84,7 +88,7 @@ const App: React.FC = () => {
                 Download Manual (.md)
             </button>
             <div className="text-xs text-slate-500 font-mono border border-slate-800 px-3 py-1 rounded-full">
-                v1.2.1
+                v1.2.3
             </div>
           </div>
         </div>
@@ -154,7 +158,7 @@ const App: React.FC = () => {
       </main>
       
       <footer className="bg-slate-900 border-t border-slate-800 mt-12 py-8 text-center text-slate-500 text-sm">
-        <p>Generates IronPython compliant scripts for HFSS 2020+ versions on Windows & Linux.</p>
+        <p>Generates IronPython compliant scripts for HFSS 2019/2020+ versions.</p>
       </footer>
     </div>
   );

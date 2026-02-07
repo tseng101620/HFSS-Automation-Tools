@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { ScriptConfig, SweepVariable } from '../utils/scriptBuilder';
-import { Settings, Play, FolderOutput, Plus, Trash2, Monitor, Server, Info, Network } from 'lucide-react';
+import { Settings, Play, FolderOutput, Plus, Trash2, Monitor, Server, Info, Network, Bug, Activity, Zap } from 'lucide-react';
 
 interface ConfigFormProps {
   config: ScriptConfig;
@@ -37,12 +38,25 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
 
   const handlePlatformChange = (platform: 'windows' | 'linux') => {
     onChange('targetPlatform', platform);
-    // Provide a helpful default path if the user switches platforms and hasn't heavily customized it yet
     if (platform === 'linux' && config.exportPath.includes('C:\\')) {
         onChange('exportPath', '/tmp/hfss_export');
     } else if (platform === 'windows' && config.exportPath.startsWith('/')) {
         onChange('exportPath', 'C:\\Temp\\HFSS_Export');
     }
+  };
+
+  const handleSmartExportChange = (checked: boolean) => {
+      onChange('smartExport', checked);
+      if (checked) {
+          onChange('simulateIndividually', false);
+      }
+  };
+
+  const handleSimulateIndividuallyChange = (checked: boolean) => {
+      onChange('simulateIndividually', checked);
+      if (checked) {
+          onChange('smartExport', false);
+      }
   };
 
   return (
@@ -53,7 +67,6 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
             Configuration
           </h2>
           
-          {/* Platform Toggle */}
           <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-700">
             <button
                 onClick={() => handlePlatformChange('windows')}
@@ -81,9 +94,52 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
       </div>
       
       <div className="space-y-6">
-        {/* HFSS Setup Names */}
+        {/* Simulation Mode Toggles */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Smart Export Toggle */}
+            <div className={`border rounded p-3 transition-all ${config.smartExport ? 'bg-purple-900/20 border-purple-500/50' : 'bg-slate-900/20 border-slate-700'}`}>
+                <label className="flex items-start cursor-pointer gap-3">
+                    <input
+                        type="checkbox"
+                        checked={config.smartExport || false}
+                        onChange={(e) => handleSmartExportChange(e.target.checked)}
+                        className="mt-1 w-4 h-4 rounded border-slate-500 bg-slate-900 text-purple-500"
+                    />
+                    <div>
+                        <span className={`text-sm font-bold flex items-center gap-1 ${config.smartExport ? 'text-purple-300' : 'text-slate-300'}`}>
+                            <Zap className="w-4 h-4" /> Smart Export (Precise)
+                        </span>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-tight">
+                            Auto-detects solved variations. Uses defined variables below to name files.
+                        </p>
+                    </div>
+                </label>
+            </div>
+
+            {/* Manual Loop Toggle */}
+            <div className={`border rounded p-3 transition-all ${config.simulateIndividually ? 'bg-blue-900/20 border-blue-500/50' : 'bg-slate-900/20 border-slate-700'}`}>
+                <label className="flex items-start cursor-pointer gap-3">
+                    <input
+                        type="checkbox"
+                        checked={config.simulateIndividually || false}
+                        onChange={(e) => handleSimulateIndividuallyChange(e.target.checked)}
+                        className="mt-1 w-4 h-4 rounded border-slate-500 bg-slate-900 text-blue-500"
+                    />
+                    <div>
+                        <span className={`text-sm font-bold flex items-center gap-1 ${config.simulateIndividually ? 'text-blue-300' : 'text-slate-300'}`}>
+                            <Activity className="w-4 h-4" /> Simulate Individually
+                        </span>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-tight">
+                            Manually sets variables & solves. Use if parametric setup fails. Slower.
+                        </p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        {/* Setup Names */}
         <div className="space-y-4">
-            <div>
+            <div className={config.simulateIndividually ? 'opacity-50 pointer-events-none' : ''}>
                 <label className="block text-sm font-medium text-slate-400 mb-1">
                 Parametric Setup Name
                 </label>
@@ -143,22 +199,32 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
           <div className="flex justify-between items-center mb-3">
             <label className="block text-sm font-medium text-blue-300 flex items-center gap-2">
               <Play className="w-4 h-4" />
-              Sweep Variables
+              Sweep Variables {config.smartExport && <span className="text-slate-400 text-xs font-normal">(Filename Filter)</span>}
             </label>
             <button 
-              onClick={handleAddVariable}
-              className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded transition-colors"
+                onClick={handleAddVariable}
+                className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded transition-colors"
             >
-              <Plus className="w-3 h-3" /> Add Variable
+                <Plus className="w-3 h-3" /> Add Variable
             </button>
           </div>
+          
+          {config.smartExport && (
+              <div className="mb-3 p-2 bg-purple-900/30 border border-purple-500/30 rounded text-xs text-purple-200 flex items-start gap-2">
+                  <Info className="w-4 h-4 flex-shrink-0 mt-0.5" /> 
+                  <span>
+                    <strong>Important:</strong> Only variables listed below will appear in the output filename. 
+                    Add your swept variables here (e.g. "M10_gap") so filenames are short and valid. 
+                    (Start/Stop/Step values are ignored in Smart Export mode).
+                  </span>
+              </div>
+          )}
 
           <div className="space-y-3">
             {config.variables.map((variable, _index) => (
               <div key={variable.id} className="bg-slate-900/50 p-3 rounded border border-slate-700 relative group">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                   
-                  {/* Variable Name */}
                   <div className="md:col-span-3">
                     <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Var Name</label>
                     <input
@@ -170,41 +236,40 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
                     />
                   </div>
 
-                  {/* Start */}
-                  <div className="md:col-span-2">
+                  <div className={`md:col-span-2 ${config.smartExport ? 'opacity-30' : ''}`}>
                     <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Start</label>
                     <input
                       type="number"
                       value={variable.start}
                       onChange={(e) => handleVariableChange(variable.id, 'start', parseFloat(e.target.value))}
                       className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
+                      disabled={config.smartExport}
                     />
                   </div>
 
-                  {/* Stop */}
-                  <div className="md:col-span-2">
+                  <div className={`md:col-span-2 ${config.smartExport ? 'opacity-30' : ''}`}>
                     <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Stop</label>
                     <input
                       type="number"
                       value={variable.stop}
                       onChange={(e) => handleVariableChange(variable.id, 'stop', parseFloat(e.target.value))}
                       className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
+                      disabled={config.smartExport}
                     />
                   </div>
 
-                  {/* Step */}
-                  <div className="md:col-span-2">
+                  <div className={`md:col-span-2 ${config.smartExport ? 'opacity-30' : ''}`}>
                     <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Step</label>
                     <input
                       type="number"
                       value={variable.step}
                       onChange={(e) => handleVariableChange(variable.id, 'step', parseFloat(e.target.value))}
                       className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
+                      disabled={config.smartExport}
                     />
                   </div>
 
-                  {/* Units */}
-                  <div className="md:col-span-2">
+                  <div className={`md:col-span-2 ${config.smartExport ? 'opacity-30' : ''}`}>
                     <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Units</label>
                     <input
                       type="text"
@@ -212,10 +277,10 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
                       onChange={(e) => handleVariableChange(variable.id, 'units', e.target.value)}
                       className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
                       placeholder="mm"
+                      disabled={config.smartExport}
                     />
                   </div>
                   
-                  {/* Delete Button */}
                   <div className="md:col-span-1 flex justify-center pb-1">
                     <button 
                       onClick={() => handleRemoveVariable(variable.id)}
@@ -255,7 +320,6 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-               {/* Filename Prefix */}
                <div className="md:col-span-8">
                 <label className="block text-xs text-slate-500">Filename Prefix</label>
                 <input
@@ -267,7 +331,6 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
                 />
               </div>
 
-              {/* Number of Ports */}
               <div className="md:col-span-4">
                  <label className="block text-xs text-slate-500 flex items-center gap-1">
                     <Network className="w-3 h-3" />
@@ -281,13 +344,10 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
                   onChange={(e) => onChange('numPorts', Math.max(1, parseInt(e.target.value) || 1))}
                   className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200 font-mono text-center"
                 />
-                <p className="text-[9px] text-right text-slate-500 mt-1">
-                    Output: <span className="text-green-400">.s{config.numPorts}p</span>
-                </p>
               </div>
             </div>
 
-            <div className="flex items-center pt-2">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center pt-2 gap-4">
               <label className="flex items-center cursor-pointer gap-2">
                 <input
                   type="checkbox"
@@ -296,6 +356,19 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
                   className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-500"
                 />
                 <span className="text-sm text-slate-300">Append variable values to file</span>
+              </label>
+
+              {/* Debug Toggle */}
+              <label className="flex items-center cursor-pointer gap-2 bg-red-900/20 px-3 py-1.5 rounded border border-red-900/50 hover:bg-red-900/30 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={config.debugMode}
+                  onChange={(e) => onChange('debugMode', e.target.checked)}
+                  className="w-4 h-4 rounded border-red-600 bg-slate-900 text-red-500"
+                />
+                <span className="text-sm text-red-200 font-medium flex items-center gap-1">
+                    <Bug className="w-3 h-3" /> Debug Mode
+                </span>
               </label>
             </div>
 
