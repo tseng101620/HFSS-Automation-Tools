@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Terminal, FileCheck, HelpCircle } from 'lucide-react';
+import { BookOpen, Terminal, FileCheck, HelpCircle, Layers } from 'lucide-react';
 
 export const UserGuide: React.FC = () => {
   return (
@@ -20,7 +20,9 @@ export const UserGuide: React.FC = () => {
               Set up a <strong>Parametric Sweep</strong> in Optimetrics containing the variables you want to test.
             </li>
             <li>
-              Note down the <strong>Parametric Setup Name</strong> (e.g., "ParametricSetup1").
+              <strong>Solution Names:</strong> Copy the names from your Project Manager tree.
+              <br/>
+              Example: Parent <code className="text-xs bg-slate-900 px-1 rounded text-blue-300">HFSS_Setup_1</code> and Child <code className="text-xs bg-slate-900 px-1 rounded text-blue-300">Sweep_1</code>.
             </li>
           </ul>
         </section>
@@ -55,9 +57,17 @@ export const UserGuide: React.FC = () => {
             <FileCheck className="w-4 h-4" />
             4. Output Format (輸出結果)
           </h3>
+          <p className="text-sm mb-2">
+            To ensure file system compatibility, decimal points in variable values are replaced with 'd' in the filename.
+          </p>
           <p className="text-sm">
-            Files will be saved with all variable values in the name: 
-            <code className="block mt-1 bg-slate-900 px-2 py-1 rounded text-green-400 break-all">Prefix_L_10mm_W_2mm.s2p</code>
+             Example: <code className="bg-slate-900 px-2 py-1 rounded text-green-400">L=2.4mm</code>
+          </p>
+          <p className="text-sm mt-1">
+             Filename: <code className="bg-slate-900 px-2 py-1 rounded text-green-400">Prefix_L_2d4mm.s2p</code>
+          </p>
+          <p className="text-sm mt-1">
+             If you have more ports, change the <strong>Num Ports</strong> setting to generate <code className="bg-slate-900 px-1 rounded text-blue-300">.s3p</code>, <code className="bg-slate-900 px-1 rounded text-blue-300">.s4p</code>, etc.
           </p>
         </section>
 
@@ -68,15 +78,19 @@ export const UserGuide: React.FC = () => {
             </h3>
             <div className="space-y-4">
                 <div>
-                    <p className="text-white font-medium text-sm mb-1">Q: Will this change my existing HFSS setup?</p>
+                    <p className="text-white font-medium text-sm mb-1 flex items-center gap-1">
+                      <Layers className="w-3 h-3 text-blue-400" />
+                      Q: What if I have multiple designs (HFSS, Circuit, etc.)?
+                    </p>
                     <p className="text-sm text-slate-400 leading-relaxed">
-                        <strong>No.</strong> This script is non-destructive. It does not modify your geometry, materials, or boundary conditions. It only triggers the "Analyze" command for the sweep you already defined and then exports the data.
+                        The script automatically targets the <strong>Active Design</strong> (the tab currently open/viewable when you click 'Run Script'). 
+                        Simply click on the design tab you wish to automate before running the script.
                     </p>
                 </div>
                 <div>
-                    <p className="text-white font-medium text-sm mb-1">Q: Does this support multiple variables?</p>
+                    <p className="text-white font-medium text-sm mb-1">Q: Will this change my existing HFSS setup?</p>
                     <p className="text-sm text-slate-400 leading-relaxed">
-                        Yes. You can add as many variables as needed. The script uses a recursive function to generate every combination (Cartesian product) of the defined ranges.
+                        <strong>No.</strong> This script is non-destructive. It does not modify your geometry or setups.
                     </p>
                 </div>
             </div>

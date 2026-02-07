@@ -2,7 +2,7 @@
 
 A React-based tool to generate **IronPython** automation scripts for **Ansys HFSS**. This tool simplifies the workflow for performing Parametric Sweeps and exporting Touchstone (.sNp) files without manual intervention.
 
-![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## 🚀 Features

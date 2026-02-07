@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScriptConfig, SweepVariable } from '../utils/scriptBuilder';
-import { Settings, Play, FolderOutput, Plus, Trash2, Monitor, Server } from 'lucide-react';
+import { Settings, Play, FolderOutput, Plus, Trash2, Monitor, Server, Info, Network } from 'lucide-react';
 
 interface ConfigFormProps {
   config: ScriptConfig;
@@ -82,31 +82,60 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
       
       <div className="space-y-6">
         {/* HFSS Setup Names */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">
-              Parametric Setup Name
-            </label>
-            <input
-              type="text"
-              value={config.parametricSetupName}
-              onChange={(e) => onChange('parametricSetupName', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              placeholder="ParametricSetup1"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">
-              Solution Setup Name
-            </label>
-            <input
-              type="text"
-              value={config.setupName}
-              onChange={(e) => onChange('setupName', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              placeholder="Setup1 : Sweep"
-            />
-          </div>
+        <div className="space-y-4">
+            <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">
+                Parametric Setup Name
+                </label>
+                <input
+                type="text"
+                value={config.parametricSetupName}
+                onChange={(e) => onChange('parametricSetupName', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                placeholder="ParametricSetup1"
+                />
+            </div>
+
+            <div className="bg-slate-900/40 p-3 rounded border border-slate-700/50">
+                <div className="flex items-center gap-2 mb-2">
+                    <label className="block text-sm font-medium text-slate-300">
+                        Solution Analysis
+                    </label>
+                    <div className="group relative">
+                        <Info className="w-3 h-3 text-slate-500 cursor-help" />
+                        <div className="absolute bottom-full left-0 mb-2 w-56 p-2 bg-slate-950 border border-slate-700 rounded text-[10px] text-slate-300 hidden group-hover:block z-10 shadow-xl">
+                            Look at your Project Manager tree. The first box is the parent Setup (e.g. HFSS_Setup_1), the second box is the Sweep under it (e.g. Sweep_1).
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Setup Name</label>
+                        <input
+                            type="text"
+                            value={config.solutionName}
+                            onChange={(e) => onChange('solutionName', e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                            placeholder="HFSS_Setup_1"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Sweep Name</label>
+                        <input
+                            type="text"
+                            value={config.sweepName}
+                            onChange={(e) => onChange('sweepName', e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                            placeholder="Sweep_1"
+                        />
+                    </div>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-2 flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    Script will combine these as: <span className="font-mono text-blue-400">"{config.solutionName} : {config.sweepName}"</span>
+                </p>
+            </div>
         </div>
 
         {/* Variable Definition Section */}
@@ -125,7 +154,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
           </div>
 
           <div className="space-y-3">
-            {config.variables.map((variable, index) => (
+            {config.variables.map((variable, _index) => (
               <div key={variable.id} className="bg-slate-900/50 p-3 rounded border border-slate-700 relative group">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                   
@@ -224,8 +253,10 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
                 placeholder={config.targetPlatform === 'linux' ? "/tmp/hfss_results" : "C:\\Temp\\HFSS_Export"}
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+               {/* Filename Prefix */}
+               <div className="md:col-span-8">
                 <label className="block text-xs text-slate-500">Filename Prefix</label>
                 <input
                   type="text"
@@ -235,18 +266,39 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
                   placeholder="Antenna_Run"
                 />
               </div>
-              <div className="flex items-center pt-5">
-                <label className="flex items-center cursor-pointer gap-2">
-                  <input
-                    type="checkbox"
-                    checked={config.includeVarInName}
-                    onChange={(e) => onChange('includeVarInName', e.target.checked)}
-                    className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-500"
-                  />
-                  <span className="text-sm text-slate-300">Append variable values to file</span>
-                </label>
+
+              {/* Number of Ports */}
+              <div className="md:col-span-4">
+                 <label className="block text-xs text-slate-500 flex items-center gap-1">
+                    <Network className="w-3 h-3" />
+                    Num Ports (N)
+                 </label>
+                 <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={config.numPorts}
+                  onChange={(e) => onChange('numPorts', Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200 font-mono text-center"
+                />
+                <p className="text-[9px] text-right text-slate-500 mt-1">
+                    Output: <span className="text-green-400">.s{config.numPorts}p</span>
+                </p>
               </div>
             </div>
+
+            <div className="flex items-center pt-2">
+              <label className="flex items-center cursor-pointer gap-2">
+                <input
+                  type="checkbox"
+                  checked={config.includeVarInName}
+                  onChange={(e) => onChange('includeVarInName', e.target.checked)}
+                  className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-500"
+                />
+                <span className="text-sm text-slate-300">Append variable values to file</span>
+              </label>
+            </div>
+
           </div>
         </div>
       </div>

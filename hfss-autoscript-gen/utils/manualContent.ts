@@ -21,8 +21,7 @@ Before running the script, ensure your HFSS project is set up correctly:
     *   **Important**: The definitions in the script (Start/Stop/Step) **MUST** match the definitions in this HFSS table.
     *   Under the **General** tab, ensure "Save Fields and Mesh" is checked if you need them, though for SNP export, standard solving is usually sufficient.
 3.  **Setup Solution**:
-    *   Ensure you have a solution setup (e.g., "Setup1") and a Frequency Sweep (e.g., "Sweep").
-    *   The standard naming convention is \`SetupName : SweepName\` (e.g., \`Setup1 : Sweep\`).
+    *   Ensure you have a solution setup (e.g., "HFSS_Setup_1") and a Frequency Sweep (e.g., "Sweep_1").
 
 ### 2.2 System Requirements
 *   **Ansys Electronics Desktop**: Version 2019 R3 or later (2020+ recommended).
@@ -34,7 +33,9 @@ Before running the script, ensure your HFSS project is set up correctly:
 
 ### 3.1 Configuration
 1.  **Platform**: Select **Windows** or **CentOS/Linux** depending on where HFSS is installed. This adjusts file path formats.
-2.  **Setup Names**: Enter the exact names from your project tree.
+2.  **Solution Analysis**: Enter the names exactly as they appear in the Project Manager tree.
+    *   **Setup Name**: The parent item (e.g. \`HFSS_Setup_1\`).
+    *   **Sweep Name**: The child item (e.g. \`Sweep_1\`).
 3.  **Variables**: Add every variable you are sweeping.
     *   **Unit**: Include the unit (e.g., 'mm', 'GHz'). If the variable is unitless, leave it empty.
 4.  **Export Settings**:

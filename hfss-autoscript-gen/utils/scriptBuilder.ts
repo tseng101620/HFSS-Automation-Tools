@@ -1,3 +1,4 @@
+
 export interface SweepVariable {
   id: string;
   name: string;
@@ -9,23 +10,27 @@ export interface SweepVariable {
 
 export interface ScriptConfig {
   targetPlatform: 'windows' | 'linux';
-  setupName: string;
+  solutionName: string; 
+  sweepName: string;    
   parametricSetupName: string;
   variables: SweepVariable[];
   exportPath: string;
   filenamePrefix: string;
   includeVarInName: boolean;
+  numPorts: number; // New field for defining .sNp format
 }
 
 export const generateHfssScript = (config: ScriptConfig): string => {
   const {
     targetPlatform,
-    setupName,
+    solutionName,
+    sweepName,
     parametricSetupName,
     variables,
     exportPath,
     filenamePrefix,
     includeVarInName,
+    numPorts,
   } = config;
 
   // Format variables for Python list
@@ -42,11 +47,14 @@ import os
 
 # --- Configuration Section ---
 parametric_setup_name = "${parametricSetupName}"
-solution_setup_name = "${setupName}"
+# The syntax "Setup : Sweep" is required by the HFSS API
+solution_setup_name = "${solutionName} : ${sweepName}"
 # Note: On Linux, ensure the path exists and is writable.
 export_folder = r"${exportPath}"
 filename_prefix = "${filenamePrefix}"
 include_var_in_filename = ${includeVarInName ? 'True' : 'False'}
+# Touchstone format extension
+file_extension = ".s${numPorts}p" 
 
 # List of variables to sweep
 # Format: {name, start, stop, step, units}
@@ -150,26 +158,31 @@ def main():
     for combo in get_combinations(sweep_variables):
         # combo is like [('L', '10mm'), ('W', '2mm')]
         
-        # Construct the Variation String used by HFSS
-        # Syntax example: "L='10mm' W='2mm'"
+        # Construct the Variation String used by HFSS (MUST keep dots for HFSS to understand)
+        # Syntax example: "L='10mm' W='2.5mm'"
         variation_parts = ["{}='{}'".format(item[0], item[1]) for item in combo]
         variation_string = " ".join(variation_parts)
         
+        # Sanitize values for Filename (Replace '.' with 'd')
+        # We replace . with d to ensure filenames are OS-safe and readable
+        # Example: '2.5mm' becomes '2d5mm'
+        safe_combo = [(c[0], c[1].replace('.', 'd')) for c in combo]
+
         # Construct Filename
-        # If enabled, append all variable values: Prefix_L_10mm_W_2mm.s2p
+        # If enabled, append all variable values: Prefix_L_10d0mm_W_2d5mm.s2p
         if include_var_in_filename:
-            var_suffix_parts = ["{}_{}".format(item[0], item[1]) for item in combo]
+            var_suffix_parts = ["{}_{}".format(item[0], item[1]) for item in safe_combo]
             var_suffix = "_".join(var_suffix_parts)
-            fname = "{}_{}.s2p".format(filename_prefix, var_suffix)
+            fname = "{}_{}{}".format(filename_prefix, var_suffix, file_extension)
         else:
-            var_suffix_parts = ["{}".format(item[1]) for item in combo]
+            var_suffix_parts = ["{}".format(item[1]) for item in safe_combo]
             var_suffix = "_".join(var_suffix_parts)
-            fname = "{}_{}.s2p".format(filename_prefix, var_suffix)
+            fname = "{}_{}{}".format(filename_prefix, var_suffix, file_extension)
             
         full_path = os.path.join(export_folder, fname)
         
         try:
-            print("Exporting: " + variation_string)
+            print("Exporting: " + variation_string + " -> " + fname)
             oModule.ExportNetworkData(
                 solution_setup_name, 
                 full_path, 
@@ -185,8 +198,7 @@ def main():
     print("All tasks finished. Total exported: " + str(count))
 
 if __name__ == "__main__":
-    main()
-`;
+    main()`;
 
   return scriptContent;
 };

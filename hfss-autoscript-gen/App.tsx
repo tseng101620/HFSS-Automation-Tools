@@ -9,7 +9,8 @@ import { Cpu, ArrowRight, FileText, Download } from 'lucide-react';
 const App: React.FC = () => {
   const [config, setConfig] = useState<ScriptConfig>({
     targetPlatform: 'windows',
-    setupName: 'Setup1 : Sweep',
+    solutionName: 'HFSS_Setup_1',
+    sweepName: 'Sweep_1',
     parametricSetupName: 'ParametricSetup1',
     variables: [
       {
@@ -32,6 +33,7 @@ const App: React.FC = () => {
     exportPath: 'C:\\Temp\\HFSS_Export',
     filenamePrefix: 'Dipole',
     includeVarInName: true,
+    numPorts: 2,
   });
 
   const [code, setCode] = useState('');
@@ -82,7 +84,7 @@ const App: React.FC = () => {
                 Download Manual (.md)
             </button>
             <div className="text-xs text-slate-500 font-mono border border-slate-800 px-3 py-1 rounded-full">
-                v1.2.0
+                v1.2.1
             </div>
           </div>
         </div>
