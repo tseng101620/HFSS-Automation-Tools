@@ -1,0 +1,255 @@
+import React from 'react';
+import { ScriptConfig, SweepVariable } from '../utils/scriptBuilder';
+import { Settings, Play, FolderOutput, Plus, Trash2, Monitor, Server } from 'lucide-react';
+
+interface ConfigFormProps {
+  config: ScriptConfig;
+  onChange: (key: keyof ScriptConfig, value: any) => void;
+}
+
+export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
+  
+  const handleAddVariable = () => {
+    const newVar: SweepVariable = {
+      id: crypto.randomUUID(),
+      name: '',
+      start: 0,
+      stop: 0,
+      step: 1,
+      units: 'mm'
+    };
+    onChange('variables', [...config.variables, newVar]);
+  };
+
+  const handleRemoveVariable = (id: string) => {
+    onChange('variables', config.variables.filter(v => v.id !== id));
+  };
+
+  const handleVariableChange = (id: string, field: keyof SweepVariable, value: string | number) => {
+    const updatedVars = config.variables.map(v => {
+      if (v.id === id) {
+        return { ...v, [field]: value };
+      }
+      return v;
+    });
+    onChange('variables', updatedVars);
+  };
+
+  const handlePlatformChange = (platform: 'windows' | 'linux') => {
+    onChange('targetPlatform', platform);
+    // Provide a helpful default path if the user switches platforms and hasn't heavily customized it yet
+    if (platform === 'linux' && config.exportPath.includes('C:\\')) {
+        onChange('exportPath', '/tmp/hfss_export');
+    } else if (platform === 'windows' && config.exportPath.startsWith('/')) {
+        onChange('exportPath', 'C:\\Temp\\HFSS_Export');
+    }
+  };
+
+  return (
+    <div className="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
+      <div className="flex justify-between items-start mb-6">
+          <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+            <Settings className="w-5 h-5 text-blue-400" />
+            Configuration
+          </h2>
+          
+          {/* Platform Toggle */}
+          <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-700">
+            <button
+                onClick={() => handlePlatformChange('windows')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                    config.targetPlatform === 'windows' 
+                    ? 'bg-blue-600 text-white shadow' 
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+            >
+                <Monitor className="w-3 h-3" />
+                Windows
+            </button>
+            <button
+                onClick={() => handlePlatformChange('linux')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                    config.targetPlatform === 'linux' 
+                    ? 'bg-orange-600 text-white shadow' 
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+            >
+                <Server className="w-3 h-3" />
+                CentOS/Linux
+            </button>
+          </div>
+      </div>
+      
+      <div className="space-y-6">
+        {/* HFSS Setup Names */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-1">
+              Parametric Setup Name
+            </label>
+            <input
+              type="text"
+              value={config.parametricSetupName}
+              onChange={(e) => onChange('parametricSetupName', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="ParametricSetup1"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-1">
+              Solution Setup Name
+            </label>
+            <input
+              type="text"
+              value={config.setupName}
+              onChange={(e) => onChange('setupName', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              placeholder="Setup1 : Sweep"
+            />
+          </div>
+        </div>
+
+        {/* Variable Definition Section */}
+        <div className="border-t border-slate-700 pt-4">
+          <div className="flex justify-between items-center mb-3">
+            <label className="block text-sm font-medium text-blue-300 flex items-center gap-2">
+              <Play className="w-4 h-4" />
+              Sweep Variables
+            </label>
+            <button 
+              onClick={handleAddVariable}
+              className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded transition-colors"
+            >
+              <Plus className="w-3 h-3" /> Add Variable
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {config.variables.map((variable, index) => (
+              <div key={variable.id} className="bg-slate-900/50 p-3 rounded border border-slate-700 relative group">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                  
+                  {/* Variable Name */}
+                  <div className="md:col-span-3">
+                    <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Var Name</label>
+                    <input
+                      type="text"
+                      value={variable.name}
+                      onChange={(e) => handleVariableChange(variable.id, 'name', e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
+                      placeholder="e.g. Length"
+                    />
+                  </div>
+
+                  {/* Start */}
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Start</label>
+                    <input
+                      type="number"
+                      value={variable.start}
+                      onChange={(e) => handleVariableChange(variable.id, 'start', parseFloat(e.target.value))}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
+                    />
+                  </div>
+
+                  {/* Stop */}
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Stop</label>
+                    <input
+                      type="number"
+                      value={variable.stop}
+                      onChange={(e) => handleVariableChange(variable.id, 'stop', parseFloat(e.target.value))}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
+                    />
+                  </div>
+
+                  {/* Step */}
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Step</label>
+                    <input
+                      type="number"
+                      value={variable.step}
+                      onChange={(e) => handleVariableChange(variable.id, 'step', parseFloat(e.target.value))}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
+                    />
+                  </div>
+
+                  {/* Units */}
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Units</label>
+                    <input
+                      type="text"
+                      value={variable.units}
+                      onChange={(e) => handleVariableChange(variable.id, 'units', e.target.value)}
+                      className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
+                      placeholder="mm"
+                    />
+                  </div>
+                  
+                  {/* Delete Button */}
+                  <div className="md:col-span-1 flex justify-center pb-1">
+                    <button 
+                      onClick={() => handleRemoveVariable(variable.id)}
+                      disabled={config.variables.length === 1}
+                      className="text-slate-600 hover:text-red-400 disabled:opacity-30 disabled:hover:text-slate-600 transition-colors"
+                      title="Remove Variable"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Export Settings */}
+        <div className="border-t border-slate-700 pt-4">
+          <label className="block text-sm font-medium text-green-300 mb-2 flex items-center gap-2">
+            <FolderOutput className="w-4 h-4" />
+            Export Settings ({config.targetPlatform === 'linux' ? 'Linux' : 'Windows'})
+          </label>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-slate-500">
+                Output Folder Path 
+                {config.targetPlatform === 'linux' && <span className="text-orange-400 ml-2">(Use forward slashes for Linux)</span>}
+              </label>
+              <input
+                type="text"
+                value={config.exportPath}
+                onChange={(e) => onChange('exportPath', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200 font-mono text-sm"
+                placeholder={config.targetPlatform === 'linux' ? "/tmp/hfss_results" : "C:\\Temp\\HFSS_Export"}
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-slate-500">Filename Prefix</label>
+                <input
+                  type="text"
+                  value={config.filenamePrefix}
+                  onChange={(e) => onChange('filenamePrefix', e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-slate-200"
+                  placeholder="Antenna_Run"
+                />
+              </div>
+              <div className="flex items-center pt-5">
+                <label className="flex items-center cursor-pointer gap-2">
+                  <input
+                    type="checkbox"
+                    checked={config.includeVarInName}
+                    onChange={(e) => onChange('includeVarInName', e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-500"
+                  />
+                  <span className="text-sm text-slate-300">Append variable values to file</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

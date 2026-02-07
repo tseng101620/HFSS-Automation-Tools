@@ -1,0 +1,5 @@
+{
+  "name": "HFSS AutoScript Gen",
+  "description": "A React application that generates Ansys HFSS IronPython scripts for automating Parametric Sweeps and SNP exports based on user configuration.",
+  "requestFramePermissions": []
+}
