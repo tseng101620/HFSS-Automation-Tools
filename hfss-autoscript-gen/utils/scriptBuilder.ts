@@ -1,4 +1,3 @@
-
 export interface SweepVariable {
   id: string;
   name: string;
@@ -303,6 +302,43 @@ def main():
 
             count = 0
             for i, var_key in enumerate(variations):
+                
+                # 2.5 Filter Stale Results (Range Check)
+                is_valid_range = True
+                for sv in sweep_variables:
+                     # Robustly find var='val' in string
+                     # Format is "Name='Val' Name2='Val2'"
+                     tokens = var_key.split(' ')
+                     for token in tokens:
+                         if "=" not in token: continue
+                         eq_idx = token.find('=')
+                         t_name = token[:eq_idx]
+                         t_val = token[eq_idx+1:].replace("'", "").replace('"', "")
+                         
+                         if t_name == sv['name']:
+                             # Parse float (handle units)
+                             val_num = ""
+                             for c in t_val:
+                                 if c.isdigit() or c == '.' or c == '-' or c == '+' or c == 'e' or c == 'E':
+                                     val_num += c
+                                 else:
+                                     break # Stop at unit
+                             
+                             try:
+                                 f_val = float(val_num)
+                                 # Check bounds with tolerance
+                                 if f_val < (sv['start'] - 1e-9) or f_val > (sv['stop'] + 1e-9):
+                                     is_valid_range = False
+                                     if debug_mode:
+                                         log("Skipping Stale Result (Out of Range): {}={} (Expected [{}, {}])".format(t_name, t_val, sv['start'], sv['stop']))
+                             except:
+                                 pass
+                         if not is_valid_range: break
+                     if not is_valid_range: break
+                
+                if not is_valid_range:
+                    continue
+
                 # 3. Construct Filename
                 fname = filename_prefix + file_extension
                 
@@ -350,7 +386,9 @@ def main():
                     )
                     success = True
                 except Exception as e:
-                    if debug_mode:
+                    if "Solution data is not available" in str(e):
+                         log("SKIP: Variation listed in DB but has no results (Invalid/Unsolved).")
+                    elif debug_mode:
                          log("Strategy 3 failed: " + str(e))
                 
                 # Fallback: Strategy 1 (Simple)
@@ -368,7 +406,8 @@ def main():
                     else:
                         log("ERROR: Export command succeeded but file not found: " + fname)
                 else:
-                    log("Failed to export variation.")
+                    if not "Solution data is not available" in str(e):
+                        log("Failed to export variation.")
 
             log("Smart Export Finished. Successfully exported: " + str(count))
             

@@ -213,9 +213,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
               <div className="mb-3 p-2 bg-purple-900/30 border border-purple-500/30 rounded text-xs text-purple-200 flex items-start gap-2">
                   <Info className="w-4 h-4 flex-shrink-0 mt-0.5" /> 
                   <span>
-                    <strong>Important:</strong> Only variables listed below will appear in the output filename. 
-                    Add your swept variables here (e.g. "M10_gap") so filenames are short and valid. 
-                    (Start/Stop/Step values are ignored in Smart Export mode).
+                    <strong>Note:</strong> Update Start/Stop/Step to match your HFSS setup. This helps the script calculate progress and validate the file count.
                   </span>
               </div>
           )}
@@ -236,40 +234,37 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
                     />
                   </div>
 
-                  <div className={`md:col-span-2 ${config.smartExport ? 'opacity-30' : ''}`}>
+                  <div className="md:col-span-2">
                     <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Start</label>
                     <input
                       type="number"
                       value={variable.start}
                       onChange={(e) => handleVariableChange(variable.id, 'start', parseFloat(e.target.value))}
                       className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
-                      disabled={config.smartExport}
                     />
                   </div>
 
-                  <div className={`md:col-span-2 ${config.smartExport ? 'opacity-30' : ''}`}>
+                  <div className="md:col-span-2">
                     <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Stop</label>
                     <input
                       type="number"
                       value={variable.stop}
                       onChange={(e) => handleVariableChange(variable.id, 'stop', parseFloat(e.target.value))}
                       className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
-                      disabled={config.smartExport}
                     />
                   </div>
 
-                  <div className={`md:col-span-2 ${config.smartExport ? 'opacity-30' : ''}`}>
+                  <div className="md:col-span-2">
                     <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Step</label>
                     <input
                       type="number"
                       value={variable.step}
                       onChange={(e) => handleVariableChange(variable.id, 'step', parseFloat(e.target.value))}
                       className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
-                      disabled={config.smartExport}
                     />
                   </div>
 
-                  <div className={`md:col-span-2 ${config.smartExport ? 'opacity-30' : ''}`}>
+                  <div className="md:col-span-2">
                     <label className="block text-[10px] text-slate-500 uppercase font-bold mb-1">Units</label>
                     <input
                       type="text"
@@ -277,7 +272,6 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
                       onChange={(e) => handleVariableChange(variable.id, 'units', e.target.value)}
                       className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-sm text-slate-200"
                       placeholder="mm"
-                      disabled={config.smartExport}
                     />
                   </div>
                   

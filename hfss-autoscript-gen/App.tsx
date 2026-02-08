@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { generateHfssScript, ScriptConfig } from './utils/scriptBuilder';
 import { ConfigForm } from './components/ConfigForm';
@@ -88,7 +89,7 @@ const App: React.FC = () => {
                 Download Manual (.md)
             </button>
             <div className="text-xs text-slate-500 font-mono border border-slate-800 px-3 py-1 rounded-full">
-                v1.2.3
+                v1.2.4
             </div>
           </div>
         </div>
